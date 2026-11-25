@@ -1,0 +1,5 @@
+{
+  "name": "claude-modell-weiche",
+  "owner": { "name": "wagenbachm" },
+  "plugins": [{ "name": "modell-weiche", "source": "./" }]
+}
