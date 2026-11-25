@@ -9,6 +9,12 @@ const ESCALATE_AT_STEP = 3
 const HARD = /\b(architektur|architecture|umbau|großer? umbau|refaktor\w*|refactor\w*|migrier\w*|migrat\w*|race condition|deadlock|speicherleck|memory leak|knifflig|tricky|warum (geht|funktioniert)|root cause|ursache|sicherheitslücke|security audit|performance|optimier\w*|gesamte[ns]? (projekt|codebase)|ganze[ns]? (projekt|codebase))\b/i
 const WORK = /\b(bau|baue|implementier|programmier|debug|fix|behebe|schreib|erstell|analysier|review|teste|deploy|build|implement|write|create|analy[sz]e)\w*/i
 
+const WERTE = [
+  { text: 'an', description: 'Weiche einschalten: Haiku / Sonnet / Opus je nach Aufgabe' },
+  { text: 'aus', description: 'Weiche ausschalten: das in der App gewählte Modell antwortet' },
+  { text: 'status', description: 'Zeigen, ob die Weiche an ist' },
+]
+
 let stufe: Stufe = 'mittel'
 // Gilt nur für diesen Chat; jeder neue Chat startet eingeschaltet.
 const aktivAtom = atom({ plugin: 'modell-weiche', key: 'aktiv' } as const, true)
@@ -34,7 +40,8 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: 'weiche',
-      description: 'Modell-Weiche in diesem Chat: /weiche an | aus | status (ohne Angabe: umschalten)',
+      description: 'Modell-Weiche in diesem Chat an- oder ausschalten (ohne Angabe: umschalten)',
+      argumentHint: '[an | aus | status]',
     })
     return next(e)
   })
@@ -51,6 +58,15 @@ export const register: Register = on => {
         ? 'Modell-Weiche ist AN: Haiku / Sonnet / Opus je nach Aufgabe.'
         : 'Modell-Weiche ist AUS: Es antwortet das in der App gewählte Modell.',
     }
+  })
+
+  on('prompt.autocomplete', async ($, e, next) => {
+    const vor = e.text.slice(0, e.start)
+    if (!/^\s*\/weiche\s+$/.test(vor)) return next(e)
+    const t = e.token.toLowerCase()
+    const werte = WERTE.filter(w => w.text.startsWith(t))
+    const r = await next(e)
+    return { suggestions: [...r.suggestions, ...werte] }
   })
 
   on('prompt.submit', async ($, e, next) => {
