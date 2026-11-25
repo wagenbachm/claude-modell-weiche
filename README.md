@@ -12,7 +12,14 @@ Unklare Fälle stuft Haiku mit einer kurzen Rückfrage ein. Braucht eine „klei
 
 ## An- und ausschalten
 
-Über der Eingabezeile steht ein Knopf „Ausschalten“ bzw. „Einschalten“. Ist die Weiche aus, antwortet das in der App gewählte Modell. Der Schalter gilt nur für den aktuellen Chat; jeder neue Chat startet eingeschaltet.
+Im Chat:
+
+- `/weiche aus`: Die Weiche ist aus, es antwortet das in der App gewählte Modell.
+- `/weiche an`: Die Weiche ist wieder an.
+- `/weiche status`: zeigt, ob sie an ist.
+- `/weiche`: schaltet um.
+
+Das gilt nur für den aktuellen Chat; jeder neue Chat startet eingeschaltet.
 
 ## Installation
 

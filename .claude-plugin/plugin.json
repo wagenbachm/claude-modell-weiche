@@ -1,1 +1,1 @@
-{ "name": "modell-weiche", "version": "0.2.0", "description": "Einfache Fragen an Haiku, normale Arbeit an Sonnet, schwere an Opus; Statuszeile zeigt das antwortende Modell, Knopf zum An- und Ausschalten", "types": "./types/index.d.ts" }
+{ "name": "modell-weiche", "version": "0.3.0", "description": "Einfache Fragen an Haiku, normale Arbeit an Sonnet, schwere an Opus; Statuszeile zeigt das antwortende Modell, Befehl /weiche zum An- und Ausschalten", "types": "./types/index.d.ts" }

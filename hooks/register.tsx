@@ -31,19 +31,26 @@ function short(model: string): string {
 }
 
 export const register: Register = on => {
-  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+  on('session.start', async ($, e, next) => {
+    await $.command.register({
+      name: 'weiche',
+      description: 'Modell-Weiche in diesem Chat: /weiche an | aus | status (ohne Angabe: umschalten)',
+    })
+    return next(e)
+  })
+
+  on('command.run', { command: 'weiche' }, async ($, e) => {
+    const arg = e.args.trim().toLowerCase()
+    if (arg === 'an' || arg === 'ein' || arg === 'on') await update($, aktivAtom, () => true)
+    else if (arg === 'aus' || arg === 'off') await update($, aktivAtom, () => false)
+    else if (arg === '') await update($, aktivAtom, v => !v)
     const an = await read($, aktivAtom)
-    const { Box, Button, Text } = $.ui.resolve(e)
-    return (
-      <Box>
-        <Text dimColor>Modell-Weiche: {an ? 'an' : 'aus'} </Text>
-        <Button
-          key="weiche"
-          label={an ? 'Ausschalten' : 'Einschalten'}
-          onPress={() => update($, aktivAtom, v => !v)}
-        />
-      </Box>
-    )
+    $.ui.status(an ? 'Weiche: an' : 'Weiche: aus')
+    return {
+      text: an
+        ? 'Modell-Weiche ist AN: Haiku / Sonnet / Opus je nach Aufgabe.'
+        : 'Modell-Weiche ist AUS: Es antwortet das in der App gewählte Modell.',
+    }
   })
 
   on('prompt.submit', async ($, e, next) => {
