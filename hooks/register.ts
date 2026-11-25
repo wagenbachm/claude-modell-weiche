@@ -1,3 +1,4 @@
+import { atom, read, update } from 'claude-code'
 import type { Register } from 'claude-code'
 
 type Stufe = 'klein' | 'mittel' | 'schwer'
@@ -10,7 +11,7 @@ const WORK = /\b(bau|baue|implementier|programmier|debug|fix|behebe|schreib|erst
 
 let stufe: Stufe = 'mittel'
 // Gilt nur für diesen Chat; jeder neue Chat startet eingeschaltet.
-let aktiv = true
+const aktivAtom = atom({ plugin: 'modell-weiche', key: 'aktiv' } as const, true)
 
 function guess(text: string): Stufe | undefined {
   const t = text.trim()
@@ -30,29 +31,23 @@ function short(model: string): string {
 }
 
 export const register: Register = on => {
-  on('session.start', async ($, e, next) => {
-    await $.command.register({
-      name: 'weiche',
-      description: 'Modell-Weiche in diesem Chat: /weiche an | aus | status',
-    })
-    return next(e)
-  })
-
-  on('command.run', { command: 'weiche' }, async ($, e) => {
-    const arg = e.args.trim().toLowerCase()
-    if (arg === 'an' || arg === 'ein' || arg === 'on') aktiv = true
-    else if (arg === 'aus' || arg === 'off') aktiv = false
-    else if (arg === '') aktiv = !aktiv
-    $.ui.status(aktiv ? 'Weiche: an' : 'Weiche: aus')
-    return {
-      text: aktiv
-        ? 'Modell-Weiche ist AN: Haiku / Sonnet / Opus je nach Aufgabe.'
-        : 'Modell-Weiche ist AUS: Es antwortet das in der App gewählte Modell.',
-    }
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    const an = await read($, aktivAtom)
+    const { Box, Button, Text } = $.ui.resolve(e)
+    return (
+      <Box>
+        <Text dimColor>Modell-Weiche: {an ? 'an' : 'aus'} </Text>
+        <Button
+          key="weiche"
+          label={an ? 'Ausschalten' : 'Einschalten'}
+          onPress={() => update($, aktivAtom, v => !v)}
+        />
+      </Box>
+    )
   })
 
   on('prompt.submit', async ($, e, next) => {
-    if (!aktiv || e.command || e.isMeta) {
+    if (!(await read($, aktivAtom)) || e.command || e.isMeta) {
       stufe = 'mittel'
       return next(e)
     }
@@ -76,7 +71,7 @@ export const register: Register = on => {
 
   on('turn.step', async function* ($, e, next) {
     if (e.agentId !== undefined) return yield* next(e)
-    if (!aktiv) {
+    if (!(await read($, aktivAtom))) {
       $.ui.status(`Antwort: ${short(e.model)} (Weiche aus)`)
       return yield* next(e)
     }
